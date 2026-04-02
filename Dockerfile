@@ -39,9 +39,13 @@ RUN python -m pip install gguf transformers==4.56.2
 # ComfyUI
 RUN git clone --depth=1 https://github.com/comfyanonymous/ComfyUI.git /opt/ComfyUI 
 WORKDIR /opt/ComfyUI
+ENV TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1
+ENV FLASH_ATTENTION_TRITON_AMD_ENABLE="TRUE"
+ENV FLASH_ATTENTION_FWD_TRITON_AMD_CONFIG_JSON='{"BLOCK_M":128,"BLOCK_N":64,"waves_per_eu":1,"PRE_LOAD_V":false,"num_stages":1,"num_warps":8}'
 RUN python -m pip install -r requirements.txt && \
     python -m pip install --prefer-binary \
-    pillow opencv-python-headless imageio imageio-ffmpeg scipy "huggingface_hub[hf_transfer]" pyyaml websocket-client
+    pillow opencv-python-headless imageio imageio-ffmpeg scipy "huggingface_hub[hf_transfer]" pyyaml websocket-client && \
+    pip install flash-attn --no-build-isolation
 
 COPY workflows/input/ai-server.jpg /opt/ComfyUI/input/
 COPY workflows/input/ai-server-2.png /opt/ComfyUI/input/
